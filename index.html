@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload EXE Files</title>
-    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
     <style>
         body {
             display: flex;
@@ -15,69 +14,63 @@
             background-color: #f4f4f4;
             font-family: Arial, sans-serif;
         }
-        h1 {
-            margin-bottom: 20px;
+        #drop-area {
+            border: 2px dashed #333;
+            width: 300px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Drag and Drop Your EXE</h1>
-    <input type="file" class="filepond" name="filepond" id="filepond" multiple />
+    <div id="drop-area">Drop .exe files here</div>
     <p id="status"></p>
 
-    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
     <script>
-        // Register FilePond plugins (if needed)
-        // FilePond.registerPlugin(FilePondPluginFileValidateType);
+        const dropArea = document.getElementById('drop-area');
+        const statusText = document.getElementById('status');
 
-        // Create a FilePond instance
-        const inputElement = document.querySelector('#filepond');
-        const pond = FilePond.create(inputElement);
-
-        // Set accepted file types to .exe
-        FilePond.setOptions({
-            acceptedFileTypes: ['application/x-msdownload', 'application/octet-stream'],
-            server: {
-                process: (fieldName, file, metadata) => {
-                    // Handle file upload here, e.g., send to server
-                    console.log('Uploading:', file.name);
-                    return new Promise((resolve, reject) => {
-                        // Replace with your server endpoint
-                        const url = '/upload'; // Example endpoint
-
-                        const formData = new FormData();
-                        formData.append(fieldName, file, file.name);
-
-                        fetch(url, {
-                            method: 'POST',
-                            body: formData,
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                resolve();
-                            } else {
-                                reject('Upload failed.');
-                            }
-                        })
-                        .catch(err => {
-                            reject(err);
-                        });
-                    });
-                },
-                revert: (uniqueFileId) => {
-                    // Handle file removal here, if necessary
-                },
-            },
+        // Prevent default behavior (Prevent file from being opened)
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false); 
+            document.body.addEventListener(eventName, preventDefaults, false); 
         });
 
-        // Display upload status
-        pond.onprocessfile = (error, file) => {
-            if (error) {
-                document.getElementById('status').textContent = 'Error uploading file.';
-            } else {
-                document.getElementById('status').textContent = 'File uploaded successfully: ' + file.filename;
+        // Highlight drop area when file is dragged over
+        dropArea.addEventListener('dragover', () => {
+            dropArea.style.borderColor = 'green';
+        });
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#333';
+        });
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            // Process each file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type === 'application/x-msdownload' || file.name.endsWith('.exe')) {
+                    statusText.textContent = `File ready for processing: ${file.name}`;
+                    // Note: You cannot execute or run .exe files in the browser
+                } else {
+                    statusText.textContent = 'Please upload a valid EXE file.';
+                }
             }
-        };
+        }
     </script>
 </body>
 </html>
