@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Play My Game</title>
-    <script src="https://cdn.jsdelivr.net/gh/emularity/emularity@latest/emularity.js"></script>
+    <title>Upload EXE Files</title>
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
     <style>
         body {
             display: flex;
@@ -15,31 +15,69 @@
             background-color: #f4f4f4;
             font-family: Arial, sans-serif;
         }
-        #game {
-            border: 2px solid #333;
-            width: 640px;
-            height: 480px;
-        }
         h1 {
             margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Play My Game</h1>
-    <div id="game"></div>
+    <h1>Drag and Drop Your EXE</h1>
+    <input type="file" class="filepond" name="filepond" id="filepond" multiple />
+    <p id="status"></p>
 
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
     <script>
-        // Path to the ZIP file containing the game
-        const gameFile = "land-of-stuff.zip"; // Ensure this path is correct
+        // Register FilePond plugins (if needed)
+        // FilePond.registerPlugin(FilePondPluginFileValidateType);
 
-        // Initialize the Emularity with the game ZIP
-        Emularity.run(gameFile, {
-            element: document.getElementById("game"),
-            width: 640,
-            height: 480,
-            entry: "client.exe"
+        // Create a FilePond instance
+        const inputElement = document.querySelector('#filepond');
+        const pond = FilePond.create(inputElement);
+
+        // Set accepted file types to .exe
+        FilePond.setOptions({
+            acceptedFileTypes: ['application/x-msdownload', 'application/octet-stream'],
+            server: {
+                process: (fieldName, file, metadata) => {
+                    // Handle file upload here, e.g., send to server
+                    console.log('Uploading:', file.name);
+                    return new Promise((resolve, reject) => {
+                        // Replace with your server endpoint
+                        const url = '/upload'; // Example endpoint
+
+                        const formData = new FormData();
+                        formData.append(fieldName, file, file.name);
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                resolve();
+                            } else {
+                                reject('Upload failed.');
+                            }
+                        })
+                        .catch(err => {
+                            reject(err);
+                        });
+                    });
+                },
+                revert: (uniqueFileId) => {
+                    // Handle file removal here, if necessary
+                },
+            },
         });
+
+        // Display upload status
+        pond.onprocessfile = (error, file) => {
+            if (error) {
+                document.getElementById('status').textContent = 'Error uploading file.';
+            } else {
+                document.getElementById('status').textContent = 'File uploaded successfully: ' + file.filename;
+            }
+        };
     </script>
 </body>
 </html>
