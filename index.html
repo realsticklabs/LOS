@@ -30,14 +30,15 @@
     <div id="game"></div>
 
     <script>
-        // Initialize the emulator and load the game
-        const gameContainer = document.getElementById("game");
+        // Path to the ZIP file containing the game
         const gameFile = "land-of-stuff.zip"; // Ensure this path is correct
 
+        // Initialize the Emularity with the game ZIP
         Emularity.run(gameFile, {
-            element: gameContainer,
+            element: document.getElementById("game"),
             width: 640,
-            height: 480
+            height: 480,
+            entry: "client.exe"
         });
     </script>
 </body>
