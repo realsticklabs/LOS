@@ -3,74 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload EXE Files</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            font-family: Arial, sans-serif;
-        }
-        #drop-area {
-            border: 2px dashed #333;
-            width: 300px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px;
-        }
-    </style>
+    <title>Extract ZIP Files</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
-    <h1>Drag and Drop Your EXE</h1>
-    <div id="drop-area">Drop .exe files here</div>
-    <p id="status"></p>
+    <h1>Upload ZIP File</h1>
+    <input type="file" id="zip-file" accept=".zip">
+    <div id="output"></div>
 
     <script>
-        const dropArea = document.getElementById('drop-area');
-        const statusText = document.getElementById('status');
-
-        // Prevent default behavior (Prevent file from being opened)
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false); 
-            document.body.addEventListener(eventName, preventDefaults, false); 
-        });
-
-        // Highlight drop area when file is dragged over
-        dropArea.addEventListener('dragover', () => {
-            dropArea.style.borderColor = 'green';
-        });
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.style.borderColor = '#333';
-        });
-
-        // Handle dropped files
-        dropArea.addEventListener('drop', handleDrop, false);
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-
-            // Process each file
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.type === 'application/x-msdownload' || file.name.endsWith('.exe')) {
-                    statusText.textContent = `File ready for processing: ${file.name}`;
-                    // Note: You cannot execute or run .exe files in the browser
-                } else {
-                    statusText.textContent = 'Please upload a valid EXE file.';
-                }
+        document.getElementById('zip-file').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const zip = new JSZip();
+                    zip.loadAsync(e.target.result)
+                        .then(function(zip) {
+                            let outputHtml = '<h2>Contents of ZIP:</h2><ul>';
+                            Object.keys(zip.files).forEach(function(filename) {
+                                const fileExtension = filename.split('.').pop();
+                                // Check for specific file extensions, e.g., .los
+                                if (fileExtension === 'los' || fileExtension === 'txt') {
+                                    outputHtml += `<li>${filename}</li>`;
+                                }
+                            });
+                            outputHtml += '</ul>';
+                            document.getElementById('output').innerHTML = outputHtml;
+                        })
+                        .catch(function(err) {
+                            console.error("Error reading zip file:", err);
+                        });
+                };
+                reader.readAsArrayBuffer(file);
             }
-        }
+        });
     </script>
 </body>
 </html>
