@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOS (Archived)</title>
-    <link rel="stylesheet" href="https://js-dos.com/1.0.0/js-dos.css">
-    <script src="https://js-dos.com/1.0.0/js-dos.js"></script>
+    <title>Play My Game</title>
+    <script src="https://cdn.jsdelivr.net/gh/emularity/emularity@latest/emularity.js"></script>
     <style>
         body {
             display: flex;
@@ -16,7 +15,7 @@
             background-color: #f4f4f4;
             font-family: Arial, sans-serif;
         }
-        #dos {
+        #game {
             border: 2px solid #333;
             width: 640px;
             height: 480px;
@@ -27,16 +26,18 @@
     </style>
 </head>
 <body>
-    <h1>Play My DOS Game</h1>
-    <div id="dos"></div>
+    <h1>Play My Game</h1>
+    <div id="game"></div>
 
     <script>
-        // Start the DOS emulator with the game ZIP file
-        DOS.start("land-of-stuff.zip", {
-            element: "dos",
+        // Initialize the emulator and load the game
+        const gameContainer = document.getElementById("game");
+        const gameFile = "path/to/your-game.zip"; // Ensure this path is correct
+
+        Emularity.run(gameFile, {
+            element: gameContainer,
             width: 640,
-            height: 480,
-            autostart: true // Automatically start the game
+            height: 480
         });
     </script>
 </body>
